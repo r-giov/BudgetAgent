@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from gmail_client import GmailClient
 from parsers import parse_transaction_email
 from ynab_client import YNABClient
+from telegram_notify import send as tg
 
 load_dotenv()
 
@@ -77,10 +78,20 @@ def main():
 
     if new_transactions:
         ynab.post_transactions(new_transactions)
+        lines = "\n".join(
+            f"{'↓' if t['amount'] >= 0 else '↑'} {t['payee_name']}  `${abs(t['amount']):.2f}`"
+            for t in new_transactions
+        )
+        tg(f"✅ *{len(new_transactions)} transaction(s) posted*\n{lines}")
 
     if unmatched:
         Path("unmatched.json").write_text(json.dumps(unmatched, indent=2))
         log.warning(f"{len(unmatched)} emails had no matching parser — see unmatched.json")
+        subjects = "\n".join(f"• {u['subject'][:50]}" for u in unmatched[:5])
+        tg(f"⚠️ *{len(unmatched)} unmatched email(s)* — couldn't parse:\n{subjects}")
+
+    if not new_transactions and not unmatched:
+        tg("📭 Sync ran — no new transactions found.")
 
     state["last_run"] = datetime.now().isoformat()
     state["processed_ids"] = list(processed)[-500:]
