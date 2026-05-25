@@ -159,35 +159,62 @@ def parse_venmo(subject, sender, body, date, email_id):
 
 # ── Generic bank alert ────────────────────────────────────────────────────────
 
+# Senders that are almost certainly financial institutions
+FINANCIAL_SENDER_PATTERNS = re.compile(
+    r"(scotiabank|ncb|jmmb|sagicor|cibc|chase|paypal|cashapp|venmo|"
+    r"bankofamerica|wellsfargo|citibank|capitalone|barclays|alert|"
+    r"notification|noreply.*bank|bank.*noreply|transactions@|statement@)",
+    re.IGNORECASE,
+)
+
+# Subject lines that strongly indicate a real transaction alert
+FINANCIAL_SUBJECT_PATTERNS = re.compile(
+    r"\b(transaction alert|debit alert|credit alert|payment alert|"
+    r"account alert|your receipt|purchase confirmation|payment received|"
+    r"payment sent|funds received|funds sent|withdrawal confirmed|"
+    r"deposit confirmed|low balance|transaction notification)\b",
+    re.IGNORECASE,
+)
+
+MAX_SANE_AMOUNT = 500_000  # anything above this is almost certainly a parse error
+
+
 def parse_bank_alert(subject, sender, body, date, email_id):
-    text = (subject + " " + body).lower()
-    bank_kw = ("alert", "transaction", "debit", "credit", "charged",
-               "withdrawal", "deposit", "payment", "purchase")
-    if not any(k in text for k in bank_kw):
+    # Must come from a financial sender OR have a very specific financial subject
+    if not FINANCIAL_SENDER_PATTERNS.search(sender) and not FINANCIAL_SUBJECT_PATTERNS.search(subject):
         return None
 
-    # Currency amount — support USD/JMD/CAD
-    m = re.search(r"(?:usd|jmd|cad|gbp)?\s*\$?\s*([\d,]+\.?\d{0,2})", body + " " + subject, re.IGNORECASE)
+    text = (subject + " " + body).lower()
+
+    # Amount must have an explicit currency symbol — no bare numbers
+    m = re.search(
+        r"(?:(?:usd|jmd|cad|gbp|j)\s*)?\$\s*([\d,]+\.?\d{0,2})",
+        body + " " + subject,
+        re.IGNORECASE,
+    )
     if not m:
         return None
 
     amount = _clean_amount(m.group(1))
-    if amount < 0.01:
+    if amount < 0.01 or amount > MAX_SANE_AMOUNT:
         return None
 
     is_credit = bool(re.search(r"\b(credit|deposit|received|refund|inflow)\b", text))
     sign = 1 if is_credit else -1
 
-    # Extract merchant name
+    # Extract merchant — strict patterns only
     payee = "Bank Transaction"
     for pat in (
         r"(?:at|merchant[:\s]+)\s*([A-Za-z][A-Za-z0-9\s\*&\-\.]{2,40}?)(?:\s+on\b|\s+for\b|\s+\$|\.|,|$)",
-        r"(?:purchase at|charged by)\s+([A-Za-z].{2,40}?)(?:\s+on\b|\.|$)",
+        r"(?:purchase at|charged by|paid to)\s+([A-Za-z][A-Za-z0-9\s\-\.]{2,40}?)(?:\s+on\b|\.|$)",
     ):
         pm = re.search(pat, body, re.IGNORECASE)
         if pm:
-            payee = pm.group(1).strip()[:50]
-            break
+            candidate = pm.group(1).strip()
+            # Reject if it looks like sentence fragments (too many lowercase common words)
+            if len(candidate) <= 50 and not re.search(r"\b(the|and|for|from|your|this|that|with|have|been)\b", candidate, re.IGNORECASE):
+                payee = candidate
+                break
 
     bank = _extract_bank_name(sender)
     txn_type = "Deposit" if is_credit else "Purchase" if re.search(r"\bpurchase\b", text) else "Debit"

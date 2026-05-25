@@ -84,8 +84,8 @@ def main():
         if txn:
             new_transactions.append(txn)
             processed.add(msg_id)
-            sign = "+" if txn["amount"] >= 0 else ""
-            log.info(f"  {txn['payee_name']}  {sign}{txn['amount']:.2f}  ({txn['date']})")
+            sign = "+" if txn["amount"] >= 0 else "-"
+            log.info(f"  [{txn['date']}] {sign}${abs(txn['amount']):.2f}  |  {txn['payee_name']}  |  {txn['memo']}")
         else:
             unmatched.append({"id": msg_id, "subject": subject, "from": sender})
 
