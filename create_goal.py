@@ -53,7 +53,7 @@ def set_goal(category_id, goal_type, target_amount, target_month=None):
         payload["category"]["goal_target_month"] = target_month
 
     r = requests.patch(
-        f"{BASE}/budgets/{BUDGET_ID}/months/current/categories/{category_id}",
+        f"{BASE}/budgets/{BUDGET_ID}/categories/{category_id}",
         headers=HEADERS,
         json=payload,
     )
