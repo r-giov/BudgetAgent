@@ -1,0 +1,40 @@
+{
+  "meta": {
+    "account_holder": "Tahj-Rojae Scott",
+    "period_start": "2026-05-21",
+    "generated": "2026-05-25"
+  },
+  "accounts": {
+    "scotia_chequing_0016": {
+      "account_name": "Scotia Chequing - Daily Transactions",
+      "transactions": [
+        {"date":"2026-05-21","payee":"Creditinfo Jamai Admin","memo":"May Salary","amount":458334.58,"type":"inflow","category":"Income: Salary","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Rosalie Small","memo":"May Rent - ACH Transfer","amount":-63000.00,"type":"outflow","category":"Needs: Housing","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"National Water Commission","memo":"NWC Red Hills Blvd - May Bill","amount":-1900.00,"type":"outflow","category":"Needs: Utilities","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"NCB (Self - Tahj-Rojae Scott 8052)","memo":"Self transfer - Debt minimums coverage","amount":-50000.00,"type":"outflow","category":"Debt: NCB Minimums","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Dominique Williams (NCB 4627)","memo":"EDJ Partner Plan - Savings contribution","amount":-10000.00,"type":"outflow","category":"Savings: EDJ Partner Plan","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Gumroad - Advanced Index Trader EA PRO MT5","memo":"US$570 after 40% discount - Trading EA","amount":-90060.00,"type":"outflow","category":"Investments: Trading Tools","cleared":true,"estimated":true},
+        {"date":"2026-05-21","payee":"Pandora","memo":"Sister birthday gift","amount":-25000.00,"type":"outflow","category":"Wants: Gifts","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"5ers Prop Account","memo":"10k funded account","amount":-7200.00,"type":"outflow","category":"Investments: Prop Trading","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Digicel","memo":"May mobile/home bill","amount":-7500.00,"type":"outflow","category":"Needs: Utilities","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"JPS","memo":"May electricity bill","amount":-17200.00,"type":"outflow","category":"Needs: Utilities","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Aunty Colleen","memo":"House cleaning","amount":-6000.00,"type":"outflow","category":"Needs: Household","cleared":true,"estimated":false},
+        {"date":"2026-05-21","payee":"Linnaeus Distribution","memo":"Cannabis","amount":-6000.00,"type":"outflow","category":"Wants: Personal","cleared":true,"estimated":false},
+        {"date":"2026-05-23","payee":"Golf Club","memo":"Driving range buckets","amount":-1850.00,"type":"outflow","category":"Wants: Leisure","cleared":true,"estimated":true},
+        {"date":"2026-05-23","payee":"Golf Instructor","memo":"Golf lesson","amount":-1000.00,"type":"outflow","category":"Wants: Leisure","cleared":true,"estimated":true},
+        {"date":"2026-05-24","payee":"Dennis Purple Cabbage","memo":"Box food","amount":-1100.00,"type":"outflow","category":"Wants: Food & Dining","cleared":true,"estimated":false},
+        {"date":"2026-05-25","payee":"Unknown - Debit Card Hold 1","memo":"Pending - awaiting payee details","amount":-2704.00,"type":"outflow","category":"UNCATEGORIZED","cleared":false,"estimated":false},
+        {"date":"2026-05-25","payee":"Unknown - Debit Card Hold 2","memo":"Pending - awaiting payee details","amount":-3205.00,"type":"outflow","category":"UNCATEGORIZED","cleared":false,"estimated":false},
+        {"date":"2026-05-25","payee":"Unknown - Debit Card Hold 3","memo":"Pending - awaiting payee details","amount":-3167.00,"type":"outflow","category":"UNCATEGORIZED","cleared":false,"estimated":false},
+        {"date":"2026-05-25","payee":"Unknown - Debit Card Hold 4","memo":"Pending - awaiting payee details","amount":-1716.00,"type":"outflow","category":"UNCATEGORIZED","cleared":false,"estimated":false},
+        {"date":"2026-05-25","payee":"Unknown - Debit Card Hold 5","memo":"Pending - awaiting payee details","amount":-984.00,"type":"outflow","category":"UNCATEGORIZED","cleared":false,"estimated":false}
+      ]
+    },
+    "ncb_account": {
+      "account_name": "NCB Account",
+      "transactions": [
+        {"date":"2026-05-21","payee":"CFA Institute via Paula","memo":"CFA first payment - US$200 partial arrangement","amount":-31541.00,"type":"outflow","category":"Savings: Education - CFA","cleared":true,"estimated":false}
+      ]
+    }
+  }
+}

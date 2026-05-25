@@ -100,7 +100,7 @@ def make_import_id(payee, amount, date):
 
 
 # ── Load transactions ─────────────────────────────────────────────
-data = json.loads(Path("unmatched.json").read_text())
+data = json.loads(Path("transactions_may2026.json").read_text())
 transactions = []
 
 for account_key, account in data["accounts"].items():
