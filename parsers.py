@@ -22,6 +22,49 @@ def _is_outflow(text: str) -> bool:
     ))
 
 
+def _extract_note(body: str) -> str:
+    """Pull out a payment note/memo/description from the email body."""
+    for pat in (
+        r"(?:note|memo|message|description|for)[:\s]+[\"']?([^\n\r\"']{3,80})[\"']?",
+        r"(?:what's it for|purpose)[:\s]+([^\n\r]{3,80})",
+    ):
+        m = re.search(pat, body, re.IGNORECASE)
+        if m:
+            note = m.group(1).strip().rstrip(".")
+            # Ignore generic/useless notes
+            if not re.match(r"^(n/?a|none|-)$", note, re.IGNORECASE):
+                return note
+    return ""
+
+
+def _extract_bank_name(sender: str) -> str:
+    """Best-effort bank name from sender email domain."""
+    domain_map = {
+        "scotiabank": "Scotiabank",
+        "ncb": "NCB",
+        "jmmb": "JMMB",
+        "sagicor": "Sagicor",
+        "cibc": "CIBC",
+        "bns": "Scotiabank",
+        "chase": "Chase",
+        "bofa": "Bank of America",
+        "bankofamerica": "Bank of America",
+        "wellsfargo": "Wells Fargo",
+        "citi": "Citibank",
+        "capitalone": "Capital One",
+        "barclays": "Barclays",
+    }
+    sender_lower = sender.lower()
+    for key, name in domain_map.items():
+        if key in sender_lower:
+            return name
+    # Fall back to domain name capitalised
+    m = re.search(r"@([\w\-]+)\.", sender_lower)
+    if m:
+        return m.group(1).replace("-", " ").title()
+    return "Bank"
+
+
 # ── PayPal ────────────────────────────────────────────────────────────────────
 
 def parse_paypal(subject, sender, body, date, email_id):
@@ -38,11 +81,16 @@ def parse_paypal(subject, sender, body, date, email_id):
     payee = payee_m.group(1).strip() if payee_m else "PayPal"
 
     sign = -1 if _is_outflow(text) else 1
+    direction = "Sent to" if sign == -1 else "Received from"
+    note = _extract_note(body)
+    memo = f"PayPal: {direction} {payee}"
+    if note:
+        memo += f" – {note}"
     return {
         "payee_name": payee,
         "amount": sign * amount,
         "date": date.strftime("%Y-%m-%d"),
-        "memo": f"PayPal – {subject[:80]}",
+        "memo": memo[:200],
         "import_id": _make_import_id(email_id, amount, date),
     }
 
@@ -65,11 +113,16 @@ def parse_cashapp(subject, sender, body, date, email_id):
     payee = payee_m.group(1).strip() if payee_m else "CashApp"
 
     sign = -1 if _is_outflow(text) else 1
+    direction = "Sent to" if sign == -1 else "Received from"
+    note = _extract_note(body)
+    memo = f"CashApp: {direction} {payee}"
+    if note:
+        memo += f" – {note}"
     return {
         "payee_name": payee,
         "amount": sign * amount,
         "date": date.strftime("%Y-%m-%d"),
-        "memo": f"CashApp – {subject[:80]}",
+        "memo": memo[:200],
         "import_id": _make_import_id(email_id, amount, date),
     }
 
@@ -90,11 +143,16 @@ def parse_venmo(subject, sender, body, date, email_id):
     payee = payee_m.group(1) if payee_m else "Venmo"
 
     sign = -1 if _is_outflow(text) else 1
+    direction = "Paid" if sign == -1 else "Received from"
+    note = _extract_note(body)
+    memo = f"Venmo: {direction} {payee}"
+    if note:
+        memo += f" – {note}"
     return {
         "payee_name": payee,
         "amount": sign * amount,
         "date": date.strftime("%Y-%m-%d"),
-        "memo": f"Venmo – {subject[:80]}",
+        "memo": memo[:200],
         "import_id": _make_import_id(email_id, amount, date),
     }
 
@@ -131,11 +189,19 @@ def parse_bank_alert(subject, sender, body, date, email_id):
             payee = pm.group(1).strip()[:50]
             break
 
+    bank = _extract_bank_name(sender)
+    txn_type = "Deposit" if is_credit else "Purchase" if re.search(r"\bpurchase\b", text) else "Debit"
+    memo = f"{bank}: {txn_type}"
+    if payee != "Bank Transaction":
+        memo += f" – {payee}"
+    note = _extract_note(body)
+    if note:
+        memo += f" ({note})"
     return {
         "payee_name": payee,
         "amount": sign * amount,
         "date": date.strftime("%Y-%m-%d"),
-        "memo": subject[:100],
+        "memo": memo[:200],
         "import_id": _make_import_id(email_id, amount, date),
     }
 
