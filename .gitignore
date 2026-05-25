@@ -1,0 +1,7 @@
+.env
+state.json
+sync.log
+cron.log
+unmatched.json
+__pycache__/
+*.pyc
