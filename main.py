@@ -47,17 +47,30 @@ def main():
     state = load_state()
     days_back = 1 if state["last_run"] else 7
 
-    gmail = GmailClient(
-        email_addr=os.environ["GMAIL_ADDRESS"],
-        app_password=os.environ["GMAIL_APP_PASSWORD"],
-    )
+    # Load email accounts — accounts.json takes priority, falls back to .env
+    accounts_file = Path("accounts.json")
+    if accounts_file.exists():
+        accounts = json.loads(accounts_file.read_text())
+    else:
+        accounts = [{"address": os.environ["GMAIL_ADDRESS"], "app_password": os.environ["GMAIL_APP_PASSWORD"]}]
+
     ynab = YNABClient(
         token=os.environ["YNAB_TOKEN"],
         budget_id=os.environ["YNAB_BUDGET_ID"],
         account_id=os.environ["YNAB_ACCOUNT_ID"],
     )
 
-    emails = gmail.fetch_transaction_emails(days_back=days_back)
+    emails = []
+    for acct in accounts:
+        log.info(f"Checking {acct['address']}...")
+        try:
+            gmail = GmailClient(email_addr=acct["address"], app_password=acct["app_password"])
+            # Prefix msg_id with email address to avoid collisions across accounts
+            for msg_id, subject, sender, body, date in gmail.fetch_transaction_emails(days_back=days_back):
+                emails.append((f"{acct['address']}:{msg_id}", subject, sender, body, date))
+        except Exception as e:
+            log.error(f"Failed to fetch from {acct['address']}: {e}")
+            tg(f"❌ Could not connect to `{acct['address']}`:\n`{e}`")
 
     processed = set(state.get("processed_ids", []))
     new_transactions = []
